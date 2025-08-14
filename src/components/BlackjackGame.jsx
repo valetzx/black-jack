@@ -179,18 +179,21 @@ const BlackjackGame = () => {
 
   const handleHit = (playerType) => {
     if (gameState !== 'playing' || gameOver) return;
-    
+
     switch (playerType) {
       case 'player':
         handlePlayerHit(deck, setDeck, playerHand, setPlayerHand, setMessage, setGameLog);
-        // 玩家要牌后额外获得一张功能牌
-        if (deck.length > 0) {
-          const newDeck = [...deck];
-          const powerCard = dealCard(newDeck);
-          setDeck(newDeck);
-          setPlayerHand(prev => [...prev, powerCard]);
-          setGameLog(prev => [...prev, '你获得了一张功能牌']);
-        }
+        // 玩家要牌后额外获得一张功能牌，确保使用最新的牌堆
+        setDeck(prevDeck => {
+          if (prevDeck.length > 0) {
+            const newDeck = [...prevDeck];
+            const powerCard = dealCard(newDeck);
+            setPlayerHand(prev => [...prev, powerCard]);
+            setGameLog(prev => [...prev, '你获得了一张功能牌']);
+            return newDeck;
+          }
+          return prevDeck;
+        });
         // 玩家要牌后移动到下一个玩家
         setTimeout(() => {
           const nextPlayer = moveToNextPlayer(currentPlayer);
@@ -199,14 +202,17 @@ const BlackjackGame = () => {
         break;
       case 'ai':
         handleAIHit(deck, setDeck, aiHand, setAiHand, setMessage, setGameLog);
-        // AI要牌后额外获得一张功能牌
-        if (deck.length > 0) {
-          const newDeck = [...deck];
-          const powerCard = dealCard(newDeck);
-          setDeck(newDeck);
-          setAiHand(prev => [...prev, powerCard]);
-          setGameLog(prev => [...prev, 'AI玩家获得了一张功能牌']);
-        }
+        // AI要牌后额外获得一张功能牌，确保使用最新的牌堆
+        setDeck(prevDeck => {
+          if (prevDeck.length > 0) {
+            const newDeck = [...prevDeck];
+            const powerCard = dealCard(newDeck);
+            setAiHand(prev => [...prev, powerCard]);
+            setGameLog(prev => [...prev, 'AI玩家获得了一张功能牌']);
+            return newDeck;
+          }
+          return prevDeck;
+        });
         // AI要牌后立即移动到下一个玩家
         setTimeout(() => {
           const nextPlayer = moveToNextPlayer(currentPlayer);
@@ -215,14 +221,17 @@ const BlackjackGame = () => {
         break;
       case 'ai2':
         handleAI2Hit(deck, setDeck, ai2Hand, setAi2Hand, setMessage, setGameLog);
-        // AI2要牌后额外获得一张功能牌
-        if (deck.length > 0) {
-          const newDeck = [...deck];
-          const powerCard = dealCard(newDeck);
-          setDeck(newDeck);
-          setAi2Hand(prev => [...prev, powerCard]);
-          setGameLog(prev => [...prev, 'AI玩家2获得了一张功能牌']);
-        }
+        // AI2要牌后额外获得一张功能牌，确保使用最新的牌堆
+        setDeck(prevDeck => {
+          if (prevDeck.length > 0) {
+            const newDeck = [...prevDeck];
+            const powerCard = dealCard(newDeck);
+            setAi2Hand(prev => [...prev, powerCard]);
+            setGameLog(prev => [...prev, 'AI玩家2获得了一张功能牌']);
+            return newDeck;
+          }
+          return prevDeck;
+        });
         // AI2要牌后立即移动到下一个玩家
         setTimeout(() => {
           const nextPlayer = moveToNextPlayer(currentPlayer);
@@ -231,14 +240,17 @@ const BlackjackGame = () => {
         break;
       case 'dealer':
         handleDealerHit(deck, setDeck, dealerHand, setDealerHand, setMessage, setGameLog);
-        // 庄家要牌后额外获得一张功能牌
-        if (deck.length > 0) {
-          const newDeck = [...deck];
-          const powerCard = dealCard(newDeck);
-          setDeck(newDeck);
-          setDealerHand(prev => [...prev, powerCard]);
-          setGameLog(prev => [...prev, '庄家获得了一张功能牌']);
-        }
+        // 庄家要牌后额外获得一张功能牌，确保使用最新的牌堆
+        setDeck(prevDeck => {
+          if (prevDeck.length > 0) {
+            const newDeck = [...prevDeck];
+            const powerCard = dealCard(newDeck);
+            setDealerHand(prev => [...prev, powerCard]);
+            setGameLog(prev => [...prev, '庄家获得了一张功能牌']);
+            return newDeck;
+          }
+          return prevDeck;
+        });
         // 庄家要牌后立即移动到下一个玩家
         setTimeout(() => {
           const nextPlayer = moveToNextPlayer(currentPlayer);
@@ -504,32 +516,24 @@ const BlackjackGame = () => {
 
               {/* 南 - 玩家区域 */}
               <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-48">
-                <h2 className={`text-base font-bold mb-1 text-center ${
-                  currentPlayer === 'player' && gameState === 'playing' 
-                    ? 'text-yellow-300' 
-                    : 'text-white'
-                }`}>
-                  你的手牌 (南)
-                </h2>
-                
                 {/* 玩家控制按钮放在玩家区域手牌上方 */}
                 {gameState === 'playing' && currentPlayer === 'player' && !playerStood && !gameOver && (
                   <div className="flex justify-center space-x-2 mb-2">
-                    <Button 
-                      onClick={() => handleHit('player')} 
+                    <Button
+                      onClick={() => handleHit('player')}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 text-sm"
                       disabled={playerStood}
                     >
                       要牌
                     </Button>
-                    <Button 
-                      onClick={handleStand} 
+                    <Button
+                      onClick={handleStand}
                       className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 text-sm"
                       disabled={playerStood}
                     >
                       停牌
                     </Button>
-                    <PowerCardManager 
+                    <PowerCardManager
                       playerHand={playerHand}
                       setPlayerHand={setPlayerHand}
                       aiHand={aiHand}
@@ -545,6 +549,14 @@ const BlackjackGame = () => {
                     />
                   </div>
                 )}
+
+                <h2 className={`text-base font-bold mb-1 text-center ${
+                  currentPlayer === 'player' && gameState === 'playing'
+                    ? 'text-yellow-300'
+                    : 'text-white'
+                }`}>
+                  你的手牌 (南)
+                </h2>
                 
                 <div className="flex justify-center">
                   {renderHand(playerHand, 'player', true)}
